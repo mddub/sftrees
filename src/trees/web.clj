@@ -9,7 +9,7 @@
   (:require [clj-http.client :as client]))
 
 (defn proxy-request [req]
-  (client/get (str "http://localhost:5777" (:uri req) "?" (:query-string req))))
+  (client/get (str "http://pure-headland-5044.herokuapp.com" (:uri req) "?" (:query-string req))))
 
 (defn get-image-url [tree]
   (let [resp (client/get (str "http://ajax.googleapis.com/ajax/services/search/images?v=1.0&rsz=8&q=" (url-encode tree)))
@@ -21,8 +21,8 @@
 (defn handler [req]
   (cond
     (= (:uri req) "/") (resource-response "trees.html" {:root "frontend"})
-    (= (:uri req) "/trees") (proxy-request req)
     (= (:uri req) "/species") (proxy-request req)
+    (re-find #"^/trees" (:uri req)) (proxy-request req)
     (= (:uri req) "/image") (response (get-image-url ((:query-params req) "species")))))
 
 (def app

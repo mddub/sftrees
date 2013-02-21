@@ -62,7 +62,7 @@ $('.trees-list').delegate('.tree-option', 'click', function(e) {
     .toArray()
     .join(',');
 
-	$.getJSON('/trees', {'species': selected})
+	$.getJSON('/trees/' + selected)
 		.success(function(data) {
 			/*
 			var heatmapData = data.map(function(latlng) {
