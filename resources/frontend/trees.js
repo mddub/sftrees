@@ -2,8 +2,6 @@ var sanFrancisco = new google.maps.LatLng(37.774546, -122.433523);
 var heatmap = new google.maps.visualization.HeatmapLayer();
 var map;
 
-var pointsBySpecies = {};
-
 $.getJSON('/species')
 	.success(function(list) {
 
@@ -59,37 +57,21 @@ $('.trees-list').delegate('.tree-option', 'click', function(e) {
       });
   }
 
-  var current = $clicked.children('.name').text();
+  var selected = $('.trees-list .active')
+    .map(function(_, el) { return $(el).children('.name').text(); })
+    .toArray()
+    .join('&');
 
-  function plot(ms) {
-    var ms = ms.map(function(latlng) {
-      return new google.maps.Marker({
-        position: new google.maps.LatLng(latlng[0], latlng[1])
-      });
-    });
+	$.getJSON('/trees/' + selected)
+		.success(function(data) {
+			markers.forEach(function(marker) { marker.setMap(null); });
 
-    ms.forEach(function(marker) { marker.setMap(map); });
+			markers = data.map(function(latlng) {
+				return new google.maps.Marker({
+					position: new google.maps.LatLng(latlng[0], latlng[1])
+				});
+			});
 
-    markers = markers.concat(ms);
-  }
-
-  if($clicked.hasClass('active')) {
-    if(pointsBySpecies[current]) {
-      plot(pointsBySpecies[current]);
-    }
-    else {
-      $.getJSON('/trees/' + current).success(function(points) {
-        pointsBySpecies[current] = points;
-        plot(points);
-      });
-    }
-  }
-  else {
-    markers.forEach(function(marker) { marker.setMap(null); });
-    markers = [];
-    var selected = $('.trees-list .active')
-      .map(function(_, el) { return $(el).children('.name').text(); })
-      .toArray();
-    selected.map(function(species) { return pointsBySpecies[species]; }).forEach(plot);
-  }
+			markers.forEach(function(marker) { marker.setMap(map); });
+		});
 });
