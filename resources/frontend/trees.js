@@ -36,7 +36,29 @@ $.getJSON('/species')
 markers = [];
 
 $('.trees-list').delegate('.tree-option', 'click', function(e) {
-	$(e.currentTarget).toggleClass('active');
+  var $clicked = $(e.currentTarget);
+	$clicked.toggleClass('active');
+
+  if($clicked.hasClass('active') && !$clicked.find('.image').length) {
+    var treeName = $clicked.children('.name').text();
+
+    /*
+    var nameParts = treeName.split(' :: ');
+    var name = (nameParts.length === 1 || nameParts[1].trim() === '') ? nameParts[0] : nameParts[1];
+    */
+    var name = treeName;
+
+    var $loading = $('<div class="image">...</div>').appendTo($clicked);
+
+    $.get('/image', {'species': name})
+      .success(function(url) {
+        var $img = $('<img class="image" src="' + url + '">').appendTo($clicked).hide();
+        $img.load(function() {
+          $loading.remove();
+          $img.show();
+        })
+      });
+  }
 
   var selected = $('.trees-list .active')
     .map(function(_, el) { return $(el).children('.name').text(); })

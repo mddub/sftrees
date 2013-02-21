@@ -2,22 +2,33 @@
   (:use [ring.adapter.jetty :only [run-jetty]])
   (:use [ring.middleware.resource :only [wrap-resource]])
   (:use [ring.middleware.file-info :only [wrap-file-info]])
+  (:use [ring.middleware.params :only [wrap-params]])
   (:use [ring.util.response :only [resource-response response]])
+  (:use [ring.util.codec :only [url-encode]])
+  (:use [cheshire.core :only [parse-string]])
   (:require [clj-http.client :as client]))
 
 (defn proxy-request [req]
   (client/get (str "http://localhost:5777" (:uri req) "?" (:query-string req))))
 
+(defn get-image-url [tree]
+  (let [resp (client/get (str "http://ajax.googleapis.com/ajax/services/search/images?v=1.0&rsz=1&q=" (url-encode tree)))
+        parsed (parse-string (:body resp))]
+        ((((parsed "responseData") "results") 0) "url")))
+
+
 (defn handler [req]
   (cond
     (= (:uri req) "/") (resource-response "trees.html" {:root "frontend"})
     (= (:uri req) "/trees") (proxy-request req)
-    (= (:uri req) "/species") (proxy-request req)))
+    (= (:uri req) "/species") (proxy-request req)
+    (= (:uri req) "/image") (response (get-image-url ((:query-params req) "species")))))
 
 (def app
   (-> handler
       (wrap-resource "frontend")
-      (wrap-file-info)))
+      (wrap-file-info)
+      (wrap-params)))
 
 (defn -main [port]
   (run-jetty app {:port (Integer. port)}))
