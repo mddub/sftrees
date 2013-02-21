@@ -42,15 +42,12 @@ $('.trees-list').delegate('.tree-option', 'click', function(e) {
   if($clicked.hasClass('active') && !$clicked.find('.image').length) {
     var treeName = $clicked.children('.name').text();
 
-    /*
-    var nameParts = treeName.split(' :: ');
-    var name = (nameParts.length === 1 || nameParts[1].trim() === '') ? nameParts[0] : nameParts[1];
-    */
-    var name = treeName;
+    //var species = treeName.split(' :: ')[0];
+    var species = treeName;
 
     var $loading = $('<div class="image">...</div>').appendTo($clicked);
 
-    $.get('/image', {'species': name})
+    $.get('/image', {'species': species})
       .success(function(url) {
         var $img = $('<img class="image" src="' + url + '">').appendTo($clicked).hide();
         $img.load(function() {

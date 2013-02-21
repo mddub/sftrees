@@ -12,9 +12,10 @@
   (client/get (str "http://localhost:5777" (:uri req) "?" (:query-string req))))
 
 (defn get-image-url [tree]
-  (let [resp (client/get (str "http://ajax.googleapis.com/ajax/services/search/images?v=1.0&rsz=1&q=" (url-encode tree)))
-        parsed (parse-string (:body resp))]
-        ((((parsed "responseData") "results") 0) "url")))
+  (let [resp (client/get (str "http://ajax.googleapis.com/ajax/services/search/images?v=1.0&rsz=8&q=" (url-encode tree)))
+        parsed (parse-string (:body resp))
+        results ((parsed "responseData") "results")]
+      ((results (rand-int (count results))) "url")))
 
 
 (defn handler [req]
