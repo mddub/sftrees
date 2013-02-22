@@ -1,6 +1,25 @@
 var sanFrancisco = new google.maps.LatLng(37.774546, -122.433523);
-var heatmap = new google.maps.visualization.HeatmapLayer();
 var map;
+
+// MARKERS or HEATMAP
+var mode = 'MARKERS';
+
+var markers = [];
+var heatmap = new google.maps.visualization.HeatmapLayer();
+
+$('.mode-options a').click(function(e) {
+  var $clicked = $(e.currentTarget);
+
+  $('.mode-options a').removeClass('active');
+  $clicked.addClass('active');
+
+  var newMode = $clicked.data('mode');
+  if(mode !== newMode) {
+    clearTrees();
+    mode = newMode;
+    getTrees();
+  }
+});
 
 $.getJSON('/species')
 	.success(function(list) {
@@ -41,8 +60,6 @@ $.getJSON('/species')
 
 	});
 
-markers = [];
-
 $('.trees-list').delegate('.tree-option', 'click', function(e) {
   var $clicked = $(e.currentTarget);
 	$clicked.toggleClass('active');
@@ -75,22 +92,50 @@ $('.trees-list').delegate('.tree-option', 'click', function(e) {
     getImg();
   }
 
+  getTrees();
+});
+
+function getTrees() {
   var selected = $('.trees-list .active')
     .map(function(_, el) { return $(el).children('.name').text(); })
     .toArray()
     .join('&');
 
 	$.getJSON('/trees/' + selected)
-    .always(function() {
-      markers.forEach(function(marker) { marker.setMap(null); });
-    })
-		.success(function(data) {
-			markers = data.map(function(latlng) {
-				return new google.maps.Marker({
-					position: new google.maps.LatLng(latlng[0], latlng[1])
-				});
-			});
+    .always(clearTrees)
+		.success(addTrees);
+}
 
-			markers.forEach(function(marker) { marker.setMap(map); });
-		});
-});
+function clearTrees() {
+  if(mode === 'MARKERS') {
+    markers.forEach(function(marker) { marker.setMap(null); });
+  } else {
+    heatmap.setMap(null);
+  }
+}
+
+function addTrees(data) {
+  if(mode === 'MARKERS') {
+
+    markers = data.map(function(latlng) {
+      return new google.maps.Marker({
+        position: new google.maps.LatLng(latlng[0], latlng[1])
+      });
+    });
+
+    markers.forEach(function(marker) { marker.setMap(map); });
+
+  } else {
+
+    var heatmapData = data.map(function(latlng) {
+      return new google.maps.LatLng(latlng[0], latlng[1]);
+    });
+
+    heatmap = new google.maps.visualization.HeatmapLayer({
+      data: heatmapData
+    });
+
+    heatmap.setMap(map);
+
+  }
+}
