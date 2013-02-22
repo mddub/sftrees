@@ -73,9 +73,10 @@ $('.trees-list').delegate('.tree-option', 'click', function(e) {
     .join('&');
 
 	$.getJSON('/trees/' + selected)
+    .always(function() {
+      markers.forEach(function(marker) { marker.setMap(null); });
+    })
 		.success(function(data) {
-			markers.forEach(function(marker) { marker.setMap(null); });
-
 			markers = data.map(function(latlng) {
 				return new google.maps.Marker({
 					position: new google.maps.LatLng(latlng[0], latlng[1])
