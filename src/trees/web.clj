@@ -15,7 +15,7 @@
   (let [resp (client/get (str "http://ajax.googleapis.com/ajax/services/search/images?v=1.0&rsz=8&q=" (url-encode tree)))
         parsed (parse-string (:body resp))
         results ((parsed "responseData") "results")]
-      ((results (rand-int (count results))) "url")))
+      ((rand-nth results) "url")))
 
 
 (defn handler [req]
