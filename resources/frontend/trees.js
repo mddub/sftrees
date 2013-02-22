@@ -47,14 +47,24 @@ $('.trees-list').delegate('.tree-option', 'click', function(e) {
 
     var $loading = $('<div class="image">...</div>').appendTo($clicked);
 
-    $.get('/image', {'species': species})
-      .success(function(url) {
-        var $img = $('<img class="image" src="' + url + '">').appendTo($clicked).hide();
-        $img.load(function() {
-          $loading.remove();
-          $img.show();
-        })
+    var getImg = function() {
+      $.ajax({
+        url: '/image',
+        data: {'species': species},
+        dataType: 'text',
+        success: function(url) {
+          var $img = $('<img class="image">').appendTo($clicked).hide();
+          $img.load(function() {
+            $loading.remove();
+            $img.show();
+          });
+          // if image 404s, try again for another random image.
+          $img.error(getImg);
+          $img.attr('src', url);
+        }
       });
+    };
+    getImg();
   }
 
   var selected = $('.trees-list .active')
