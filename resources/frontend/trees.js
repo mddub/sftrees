@@ -29,7 +29,15 @@ $.getJSON('/species')
 			);
 		});
 
-		$('.trees-list .tree-option').first().click();
+    // choose a random species with a reasonable number of trees to show
+    var candidates = $('.tree-option').filter(function(_, el) {
+      var count = parseInt($(el).children('.count').text(), 10);
+      return count <= 200 && count >= 100;
+    });
+    var $chosen = $(candidates[Math.floor(Math.random() * candidates.length)]);
+		$chosen.click();
+    // and scroll so that it's in view
+    $('.trees-container').scrollTop($chosen.offset().top - 100);
 
 	});
 
